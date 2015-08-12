@@ -19,4 +19,8 @@ func main() {
 
 
   fmt.Println(msg.GetAuthor().GetName() + ": " +msg.GetText())
+
+  data, _ := proto.Marshal(msg)
+
+  fmt.Println("%s", data)
 }
