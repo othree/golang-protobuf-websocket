@@ -14,6 +14,7 @@ var data []byte
 var upgrader = websocket.Upgrader{
   ReadBufferSize:  1024,
   WriteBufferSize: 1024,
+  CheckOrigin: func(r *http.Request) bool { return true },
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -36,20 +37,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
   }
 }
 
-func serveHome(w http.ResponseWriter, r *http.Request) {
-  if r.URL.Path != "/" {
-    http.Error(w, "Not found", 404)
-    return
-  }
-  if r.Method != "GET" {
-    http.Error(w, "Method not allowed", 405)
-    return
-  }
-  w.Header().Set("Content-Type", "text/html; charset=utf-8")
-  w.Write([]byte(homeHTML))
-}
-
-
 func main() {
 
   msg := &message.Message{
@@ -68,37 +55,9 @@ func main() {
 
   fmt.Println("%s", data)
 
-  http.HandleFunc("/", serveHome)
   http.HandleFunc("/ws", handler)
   if err := http.ListenAndServe("127.0.0.1:1337", nil); err != nil {
     log.Fatal(err)
   }
 }
 
-const homeHTML = `<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <title>WebSocket Example</title>
-    </head>
-    <body>
-        <script type="text/javascript">
-            (function() {
-                var data = document.getElementById("fileData");
-                var conn = new WebSocket("ws://127.0.0.1:1337/ws");
-                conn.onopen = function () {
-                  console.log("Opening a connection...");
-                  conn.send('MSG');
-                  conn.binaryType = "arraybuffer";
-                }
-                conn.onclose = function(evt) {
-                  data.textContent = 'Connection closed';
-                }
-                conn.onmessage = function(evt) {
-                    console.log('file updated');
-                    data.textContent = evt.data;
-                }
-            })();
-        </script>
-    </body>
-</html>
-`

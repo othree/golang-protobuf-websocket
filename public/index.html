@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>WebSocket Example</title>
+  </head>
+  <body>
+    <script src="//cdn.rawgit.com/dcodeIO/ByteBuffer.js/4.0.0/dist/ByteBufferAB.js"></script>
+    <script src="//cdn.rawgit.com/dcodeIO/ProtoBuf.js/4.0.0/dist/ProtoBuf.js"></script>
+    <script type="text/javascript">
+      (function() {
+
+        var ProtoBuf = dcodeIO.ProtoBuf;
+        var builder = ProtoBuf.loadJsonFile("message.json");
+
+        var data = document.getElementById("fileData");
+        var conn = new WebSocket("ws://127.0.0.1:1337/ws");
+        conn.onopen = function () {
+          console.log("Opening a connection...");
+          conn.send('MSG');
+          conn.binaryType = "arraybuffer";
+        }
+        conn.onclose = function(evt) {
+          data.textContent = 'Connection closed';
+        }
+        conn.onmessage = function(event) {
+          var Message = builder.build("Message");
+          var message = Message.decode(event.data);
+          console.log(message);
+        }
+      })();
+    </script>
+  </body>
+</html>
